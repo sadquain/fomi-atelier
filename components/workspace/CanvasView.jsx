@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
-  Maximize2,
   ZoomIn,
   ZoomOut,
   Star,
@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
+  Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export function CanvasView({
   const currentIndex = allNodes.findIndex((n) => n.id === node.id);
   const prevNode = allNodes[currentIndex - 1];
   const nextNode = allNodes[currentIndex + 1];
+  const isVideo = node.type === "video" || Boolean(node.videoUrl);
 
   const handleCopyPrompt = () => {
     try {
@@ -47,9 +49,9 @@ export function CanvasView({
 
   const handleDownload = () => {
     const a = document.createElement("a");
-    a.href = node.imageUrl;
+    a.href = isVideo ? node.videoUrl : node.imageUrl;
     a.target = "_blank";
-    a.download = `fomi-pro-${node.id}.jpg`;
+    a.download = `fomi-pro-${node.id}.${isVideo ? "mp4" : "jpg"}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -192,17 +194,33 @@ export function CanvasView({
           </button>
         )}
 
-        {/* Scaled Master Canvas Image */}
+        {/* Scaled Master Canvas Image / Video */}
         <div
           className="transition-transform duration-200 ease-out flex items-center justify-center max-w-full max-h-full"
           style={{ transform: `scale(${zoomLevel})` }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={node.imageUrl}
-            alt={node.title}
-            className="max-w-[85vw] max-h-[68vh] rounded-2xl object-contain shadow-2xl border border-white/10"
-          />
+          {isVideo ? (
+            <video
+              src={node.videoUrl}
+              poster={node.posterUrl || node.imageUrl}
+              controls
+              autoPlay
+              loop
+              playsInline
+              className="max-w-[85vw] max-h-[68vh] rounded-2xl object-contain shadow-2xl border border-white/10"
+            />
+          ) : (
+            <div className="relative w-[85vw] max-w-5xl h-[65vh]">
+              <Image
+                src={node.imageUrl}
+                alt={node.alt || node.title}
+                fill
+                sizes="(max-width: 1024px) 90vw, 1200px"
+                priority
+                className="rounded-2xl object-contain shadow-2xl"
+              />
+            </div>
+          )}
         </div>
 
         {/* Minimal Bottom Prompt HUD */}
@@ -252,9 +270,14 @@ export function CanvasView({
                   : "border-white/20 hover:border-white/50 opacity-60 hover:opacity-100"
               )}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={n.thumbUrl} alt={n.title} className="w-full h-full object-cover" />
-              <span className="absolute bottom-0.5 left-0.5 text-[8px] font-mono text-white bg-black/60 px-1 rounded">
+              <Image
+                src={n.thumbUrl}
+                alt={n.alt || n.title}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+              <span className="absolute bottom-0.5 left-0.5 text-[8px] font-mono text-white bg-black/60 px-1 rounded z-10">
                 #{idx + 1}
               </span>
             </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { Download, Heart, Copy, Repeat, Maximize2, Play, Check } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/utils";
@@ -68,6 +69,8 @@ export const ResultCard = React.memo(function ResultCard({
       ? "aspect-video"
       : "aspect-[3/4]";
 
+  const altText = output.alt || `AI generated visual output for ${generation.prompt}`;
+
   return (
     <div
       role="group"
@@ -105,18 +108,19 @@ export const ResultCard = React.memo(function ResultCard({
         </div>
       ) : (
         <div className="relative w-full h-full bg-[var(--bg-subtle)] overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={output.url}
-            alt={generation.prompt}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            alt={altText}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
+            priority={index < 4}
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </div>
       )}
 
       {/* Floating Action Bar on Hover & Focus */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 p-2.5 flex flex-col justify-between pointer-events-none">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 p-2.5 flex flex-col justify-between pointer-events-none z-10">
         {/* Top bar: Favorite & Maximize / Lightbox */}
         <div className="flex items-center justify-between pointer-events-auto">
           <IconButton

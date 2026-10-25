@@ -15,6 +15,7 @@ const DynamicLightboxModal = dynamic(() => import("./LightboxModal"), {
 
 export function ResultsThread({
   generations = [],
+  isLoading = false,
   activeGenerationId,
   isGenerating,
   generatingTurn,
@@ -54,6 +55,19 @@ export function ResultsThread({
       {/* Error State Banner with Retry */}
       <ErrorState error={error} onRetry={onRetry} onClear={onClearError} />
 
+      {/* Initial load skeleton state */}
+      {isLoading && (
+        <div className="space-y-6">
+          <SkeletonGrid
+            prompt="Retrieving latest generation timeline from neural pipeline..."
+            model="Fomi Flux Ultra"
+            type="image"
+            aspectRatio="3:4"
+            numOutputs={4}
+          />
+        </div>
+      )}
+
       {/* In-progress optimistic generation skeleton turn */}
       {isGenerating && generatingTurn && (
         <SkeletonGrid
@@ -65,11 +79,13 @@ export function ResultsThread({
         />
       )}
 
-      {/* Empty State when no generations exist */}
-      {generations.length === 0 && !isGenerating ? (
+      {/* Empty State when no generations exist and not loading */}
+      {!isLoading && generations.length === 0 && !isGenerating && !error && (
         <EmptyState onSelectPrompt={onSelectPrompt} />
-      ) : (
-        /* Chat-style generations thread */
+      )}
+
+      {/* Chat-style generations thread */}
+      {!isLoading && generations.length > 0 && (
         <div className="space-y-6">
           {generations.map((gen) => (
             <GenerationTurn

@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
-import { GitBranch, Star, SplitSquareVertical, ArrowDown, Plus, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { GitBranch, Star, SplitSquareVertical, ArrowDown, Plus, Sparkles, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function LineageGraph({
   nodes = [],
   activeNodeId,
+  isGenerating = false,
+  activeNode,
   onSelectNode,
   onForkNode,
   onCompareWithParent,
@@ -131,14 +134,19 @@ export function LineageGraph({
 
                         {/* Image Preview with Aspect Ratio */}
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-[var(--bg-subtle)] relative mb-2.5">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={node.imageUrl}
-                            alt={node.title}
-                            loading="lazy"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            alt={node.alt || node.title}
+                            fill
+                            sizes="(max-width: 640px) 280px, 320px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                          <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white">
+                          {node.type === "video" && (
+                            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-[10px] text-white flex items-center gap-1 font-semibold z-10">
+                              <Play className="w-2.5 h-2.5 fill-current" /> Video
+                            </span>
+                          )}
+                          <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white z-10">
                             {node.aspectRatio}
                           </span>
                           <span className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] text-white">
@@ -198,6 +206,21 @@ export function LineageGraph({
                     </div>
                   );
                 })}
+
+                {/* Pending Generation Shimmer Node */}
+                {isGenerating && activeNode?.branch === branchName && (
+                  <div className="w-full rounded-2xl p-3 bg-[var(--bg-card)] border border-[var(--accent-coral)] ring-2 ring-[var(--accent-coral)]/30 shadow-warm-md animate-pulse">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--border-subtle)]/50">
+                      <span className="text-xs font-bold text-[var(--accent-coral)] flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 animate-spin" /> Synthesizing Fork...
+                      </span>
+                      <span className="text-[10px] font-mono text-[var(--text-muted)]">Active</span>
+                    </div>
+                    <div className="aspect-video w-full rounded-xl bg-[var(--bg-subtle)] animate-shimmer mb-2 flex items-center justify-center">
+                      <span className="text-[10px] font-mono text-[var(--text-muted)]">Computing diffusion latent...</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Fork New Leaf Button */}
                 <button

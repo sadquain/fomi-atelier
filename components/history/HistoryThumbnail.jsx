@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export const HistoryThumbnail = React.memo(function HistoryThumbnail({
   const firstOutput = generation.outputs?.[0];
   const thumbUrl = firstOutput?.thumbUrl || firstOutput?.url;
   const isVideo = generation.type === "video";
+  const altText = firstOutput?.alt || `Generation thumbnail for ${generation.prompt}`;
 
   return (
     <div className="relative shrink-0">
@@ -34,12 +36,12 @@ export const HistoryThumbnail = React.memo(function HistoryThumbnail({
         )}
       >
         {thumbUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={thumbUrl}
-            alt={generation.prompt}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            alt={altText}
+            fill
+            sizes="56px"
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
           <div className="w-full h-full bg-[var(--bg-subtle)] flex items-center justify-center text-[10px] text-[var(--text-muted)]">
@@ -49,14 +51,14 @@ export const HistoryThumbnail = React.memo(function HistoryThumbnail({
 
         {/* Video indicator badge */}
         {isVideo && (
-          <div className="absolute bottom-1 right-1 p-0.5 rounded-full bg-black/60 text-white backdrop-blur-xs">
+          <div className="absolute bottom-1 right-1 p-0.5 rounded-full bg-black/60 text-white backdrop-blur-xs z-10">
             <Play className="w-2.5 h-2.5 fill-white" aria-hidden="true" />
           </div>
         )}
 
         {/* Active subtle tint */}
         {isActive && (
-          <div className="absolute inset-0 bg-[var(--accent-coral)]/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-[var(--accent-coral)]/10 pointer-events-none z-10" />
         )}
       </button>
 

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function HistoryStrip({
   generations = [],
+  isLoading = false,
   activeGenerationId,
   onSelectGeneration,
   onViewAll,
@@ -35,20 +36,21 @@ export function HistoryStrip({
             <History className="w-3.5 h-3.5 text-[var(--accent-coral)]" aria-hidden="true" />
             <span className="hidden xs:inline">History</span>
             <span className="px-1.5 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[10px] text-[var(--text-secondary)] font-medium">
-              {generations.length}
+              {isLoading ? "..." : generations.length}
             </span>
           </div>
 
           <button
             type="button"
             onClick={onViewAll}
-            className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--accent-coral)] font-medium transition-colors cursor-pointer select-none"
+            disabled={isLoading || generations.length === 0}
+            className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--accent-coral)] font-medium transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             / View All
           </button>
         </div>
 
-        {/* Scroll Left Button (hidden on touch/mobile) */}
+        {/* Scroll Left Button */}
         <button
           type="button"
           onClick={() => scroll("left")}
@@ -58,19 +60,28 @@ export function HistoryStrip({
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
         </button>
 
-        {/* Scrollable Thumbnails row */}
+        {/* Scrollable Thumbnails row / Loading Skeletons */}
         <div
           ref={scrollContainerRef}
           className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 scroll-smooth"
         >
-          {generations.map((gen) => (
-            <HistoryThumbnail
-              key={gen.id}
-              generation={gen}
-              isActive={gen.id === activeGenerationId}
-              onClick={onSelectGeneration}
-            />
-          ))}
+          {isLoading ? (
+            Array.from({ length: 12 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-subtle)] animate-shimmer shrink-0"
+              />
+            ))
+          ) : (
+            generations.map((gen) => (
+              <HistoryThumbnail
+                key={gen.id}
+                generation={gen}
+                isActive={gen.id === activeGenerationId}
+                onClick={onSelectGeneration}
+              />
+            ))
+          )}
         </div>
 
         {/* Scroll Right Button */}

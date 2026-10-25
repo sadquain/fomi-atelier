@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback, useState } from "react";
+import Image from "next/image";
 import {
   X,
   ChevronLeft,
@@ -130,12 +131,16 @@ export default function LightboxModal({
               className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl"
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={currentItem.url}
-              alt={generation.prompt}
-              className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl transition-all duration-200"
-            />
+            <div className="relative w-full h-full min-h-[360px] flex items-center justify-center">
+              <Image
+                src={currentItem.url}
+                alt={currentItem.alt || generation.prompt}
+                fill
+                sizes="(max-width: 1024px) 95vw, 70vw"
+                priority
+                className="rounded-2xl object-contain shadow-2xl transition-all duration-200"
+              />
+            </div>
           )}
 
           {/* Navigation Arrows if batch > 1 */}

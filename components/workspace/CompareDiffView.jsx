@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   SplitSquareVertical,
   Sliders,
@@ -101,11 +102,13 @@ export function CompareDiffView({
       {compareMode === "swipe" ? (
         <div className="relative w-full max-w-5xl mx-auto aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-[var(--border-subtle)] select-none">
           {/* Base Image (Node B - Variant) */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={nodeB.imageUrl}
-            alt={nodeB.title}
-            className="absolute inset-0 w-full h-full object-contain"
+            alt={nodeB.alt || nodeB.title}
+            fill
+            sizes="(max-width: 1024px) 95vw, 1200px"
+            priority
+            className="object-contain"
           />
 
           {/* Overlaid Image (Node A - Parent) with Clip Path based on slider position */}
@@ -113,11 +116,13 @@ export function CompareDiffView({
             className="absolute inset-0 w-full h-full overflow-hidden"
             style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={nodeA.imageUrl}
-              alt={nodeA.title}
-              className="absolute inset-0 w-full h-full object-contain"
+              alt={nodeA.alt || nodeA.title}
+              fill
+              sizes="(max-width: 1024px) 95vw, 1200px"
+              priority
+              className="object-contain"
             />
           </div>
 
@@ -158,9 +163,14 @@ export function CompareDiffView({
               <span>Parent: {nodeA.title}</span>
               <span className="text-[10px] text-[var(--text-muted)] font-mono">{nodeA.model}</span>
             </div>
-            <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-[var(--border-subtle)] shadow-md">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={nodeA.imageUrl} alt={nodeA.title} className="w-full h-full object-contain" />
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-[var(--border-subtle)] shadow-md">
+              <Image
+                src={nodeA.imageUrl}
+                alt={nodeA.alt || nodeA.title}
+                fill
+                sizes="(max-width: 768px) 95vw, 600px"
+                className="object-contain"
+              />
             </div>
           </div>
 
@@ -169,9 +179,14 @@ export function CompareDiffView({
               <span>Variant: {nodeB.title}</span>
               <span className="text-[10px] text-[var(--text-muted)] font-mono">{nodeB.model}</span>
             </div>
-            <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-[var(--border-subtle)] shadow-md">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={nodeB.imageUrl} alt={nodeB.title} className="w-full h-full object-contain" />
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-[var(--border-subtle)] shadow-md">
+              <Image
+                src={nodeB.imageUrl}
+                alt={nodeB.alt || nodeB.title}
+                fill
+                sizes="(max-width: 768px) 95vw, 600px"
+                className="object-contain"
+              />
             </div>
           </div>
         </div>

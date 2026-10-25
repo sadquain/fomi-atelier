@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Sparkles, GitBranch, X, Plus, Layers, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { isTypingTarget } from "@/lib/isTypingTarget";
+
 export function FloatingPromptDock({
   activeNode,
   onGenerateFork,
@@ -26,11 +28,10 @@ export function FloatingPromptDock({
   // Global '/' keyboard shortcut to focus prompt
   useEffect(() => {
     const handleGlobalKey = (e) => {
-      if (
-        e.key === "/" &&
-        document.activeElement?.tagName !== "INPUT" &&
-        document.activeElement?.tagName !== "TEXTAREA"
-      ) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target) || isTypingTarget(document.activeElement)) return;
+
+      if (e.key === "/") {
         e.preventDefault();
         setIsExpanded(true);
         setTimeout(() => inputRef.current?.focus(), 50);

@@ -1,41 +1,45 @@
 import { NextResponse } from "next/server";
 import { MODELS } from "@/data/modelsData";
 
-// Curated image pools for realistic AI visual generations
-const CURATED_IMAGE_POOLS = [
-  "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
+// Local image pool (20 portrait images in public/media/images)
+const LOCAL_IMAGE_POOLS = [
+  { url: "/media/images/portrait-01.jpg", alt: "Ceramic portrait sculpture with soft craquelure finish and warm rose peony blossoms" },
+  { url: "/media/images/portrait-02.jpg", alt: "Studio portrait with glazed porcelain texture and subtle golden fissures" },
+  { url: "/media/images/portrait-03.jpg", alt: "Artistic portrait with soft peach lighting and delicate botanical framing" },
+  { url: "/media/images/portrait-04.jpg", alt: "Warm toned studio sculpture portrait with pastel floral petals" },
+  { url: "/media/images/portrait-05.jpg", alt: "Minimalist architectural arch overlooking warm sand dunes during golden hour" },
+  { url: "/media/images/portrait-06.jpg", alt: "Sunlit curved concrete sanctuary pavilion with soft terracotta shadows" },
+  { url: "/media/images/portrait-07.jpg", alt: "Abstract warm dune waves reflecting twilight magenta and amber sky" },
+  { url: "/media/images/portrait-08.jpg", alt: "Sculptural glass dome interior capturing dramatic desert horizon light" },
+  { url: "/media/images/portrait-09.jpg", alt: "Editorial portrait of a woman looking forward with natural skin texture and soft rim lighting" },
+  { url: "/media/images/portrait-10.jpg", alt: "High fashion studio portrait with elegant styling and soft diffused lighting" },
+  { url: "/media/images/portrait-11.jpg", alt: "Refined portrait with subtle specular highlights and studio backdrop" },
+  { url: "/media/images/portrait-12.jpg", alt: "Artistic portrait with delicate facial contouring and warm peach radiance" },
+  { url: "/media/images/portrait-13.jpg", alt: "Rain slicked street with vibrant neon reflections and holographic signs" },
+  { url: "/media/images/portrait-14.jpg", alt: "Narrow neon alley illuminated by vibrant teal and fuchsia lanterns" },
+  { url: "/media/images/portrait-15.jpg", alt: "Moody wet street corridor with glowing cyberpunk shopfront displays" },
+  { url: "/media/images/portrait-16.jpg", alt: "Atmospheric cityscape at night with misty cyan reflections in water puddles" },
+  { url: "/media/images/portrait-17.jpg", alt: "Lush botanical greenhouse interior with warm afternoon sunlight filtering through glass" },
+  { url: "/media/images/portrait-18.jpg", alt: "Curated potted plants and botanical conservatory with delicate dew reflections" },
+  { url: "/media/images/portrait-19.jpg", alt: "Sunlit conservatory with hanging ferns and vintage ceramic pots" },
+  { url: "/media/images/portrait-20.jpg", alt: "Peaceful greenhouse scene with warm amber glow on wooden study benches" },
 ];
 
-const CURATED_VIDEO_POOLS = [
+const LOCAL_VIDEO_POOLS = [
   {
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fluid-colors-in-water-in-slow-motion-42658-large.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "/media/videos/video-01.mp4",
+    posterUrl: "/media/videos/video-poster-01.jpg",
+    alt: "Fluid bioluminescent tendrils and swirling water currents in crystal blue canyon",
   },
   {
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-43306-large.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "/media/videos/video-02.mp4",
+    posterUrl: "/media/videos/video-poster-02.jpg",
+    alt: "Macro suspension of terracotta droplets forming intricate tendrils",
   },
   {
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "/media/videos/video-03.mp4",
+    posterUrl: "/media/videos/video-poster-03.jpg",
+    alt: "Volumetric ink swirls with ambient luminous highlights in water",
   },
 ];
 
@@ -64,8 +68,8 @@ export async function POST(request) {
       );
     }
 
-    // Simulate AI neural network latency (1800ms)
-    await new Promise((resolve) => setTimeout(resolve, 1800));
+    // Simulate AI neural network latency (1600ms)
+    await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const modelObj = MODELS.find((m) => m.id === modelId) || MODELS[0];
     const genId = `gen-${Date.now()}`;
@@ -74,13 +78,14 @@ export async function POST(request) {
     let outputs = [];
 
     if (type === "video") {
-      const vidMeta = CURATED_VIDEO_POOLS[Math.abs(seed) % CURATED_VIDEO_POOLS.length];
+      const vidMeta = LOCAL_VIDEO_POOLS[Math.abs(seed) % LOCAL_VIDEO_POOLS.length];
       outputs.push({
         id: `out-${genId}-1`,
         url: vidMeta.posterUrl,
         thumbUrl: vidMeta.posterUrl,
         videoUrl: vidMeta.videoUrl,
         posterUrl: vidMeta.posterUrl,
+        alt: vidMeta.alt,
         duration,
         resolution,
         motionStrength,
@@ -90,14 +95,15 @@ export async function POST(request) {
         isFavorite: false,
       });
     } else {
-      const startIndex = Math.abs(seed) % CURATED_IMAGE_POOLS.length;
+      const startIndex = Math.abs(seed) % LOCAL_IMAGE_POOLS.length;
       for (let i = 0; i < count; i++) {
-        const poolIndex = (startIndex + i * 3) % CURATED_IMAGE_POOLS.length;
-        const baseImg = CURATED_IMAGE_POOLS[poolIndex];
+        const poolIndex = (startIndex + i * 3) % LOCAL_IMAGE_POOLS.length;
+        const baseItem = LOCAL_IMAGE_POOLS[poolIndex];
         outputs.push({
           id: `out-${genId}-${i + 1}`,
-          url: baseImg,
-          thumbUrl: baseImg.replace("w=800", "w=240"),
+          url: baseItem.url,
+          thumbUrl: baseItem.url,
+          alt: baseItem.alt,
           width: 768,
           height: 1024,
           aspectRatio,

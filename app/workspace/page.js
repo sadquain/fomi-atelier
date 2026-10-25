@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
 import { CommandPalette } from "@/components/workspace/CommandPalette";
 import { LineageGraph } from "@/components/workspace/LineageGraph";
@@ -9,6 +9,8 @@ import { CompareDiffView } from "@/components/workspace/CompareDiffView";
 import { ProjectMemoryDrawer } from "@/components/workspace/ProjectMemoryDrawer";
 import { FloatingPromptDock } from "@/components/workspace/FloatingPromptDock";
 import { PRO_PROJECT_METADATA, INITIAL_NODES } from "@/data/proProjectData";
+import { isTypingTarget } from "@/lib/isTypingTarget";
+import { AlertCircle, RefreshCw, X } from "lucide-react";
 
 export default function ProfessionalWorkspacePage() {
   const [nodes, setNodes] = useState(INITIAL_NODES);
@@ -18,8 +20,12 @@ export default function ProfessionalWorkspacePage() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isProjectMemoryOpen, setIsProjectMemoryOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
   const [activeModel, setActiveModel] = useState("Fomi Flux Ultra");
   const [activeRatio, setActiveRatio] = useState("16:9");
+
+  const lastForkPayloadRef = useRef(null);
 
   const activeNode = nodes.find((n) => n.id === activeNodeId) || nodes[0];
   const compareNodeA = nodes.find((n) => n.id === compareParentId) || nodes[0];
@@ -41,35 +47,6 @@ export default function ProfessionalWorkspacePage() {
     );
   }, []);
 
-  const handleForkNode = useCallback(
-    (id) => {
-      const parent = nodes.find((n) => n.id === id) || activeNode;
-      const newId = `node-fork-${Date.now().toString().slice(-4)}`;
-      const newNode = {
-        id: newId,
-        parentId: parent.id,
-        branch: parent.branch.includes("Branch") ? parent.branch : "Branch C: Lighting Exploration",
-        title: `Shot ${nodes.length + 1}: Variant Fork`,
-        prompt: `${parent.prompt}, warm peach volumetric bloom, shallow focus`,
-        diffFromParent: "+ warm peach volumetric bloom, shallow focus",
-        model: activeModel,
-        aspectRatio: activeRatio,
-        seed: Math.floor(Math.random() * 900000) + 100000,
-        guidance: 7.5,
-        steps: 32,
-        timestamp: "Just now",
-        isHero: false,
-        imageUrl: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1200&q=80",
-        thumbUrl: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=320&q=80",
-      };
-
-      setNodes((prev) => [...prev, newNode]);
-      setActiveNodeId(newNode.id);
-      setCompareParentId(parent.id);
-    },
-    [nodes, activeNode, activeModel, activeRatio]
-  );
-
   const handleCompareWithParent = useCallback(
     (id) => {
       const child = nodes.find((n) => n.id === id) || activeNode;
@@ -82,21 +59,113 @@ export default function ProfessionalWorkspacePage() {
     [nodes, activeNode]
   );
 
+  const handleGenerateFork = useCallback(
+    async (payload) => {
+      setIsGenerating(true);
+      setGenerateError(null);
+      lastForkPayloadRef.current = payload;
+      const parent = nodes.find((n) => n.id === payload.parentId) || activeNode;
+      const seed = Math.floor(Math.random() * 900000) + 100000;
+
+      try {
+        const isVideoModel = activeModel.toLowerCase().includes("video");
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: payload.prompt,
+            type: isVideoModel ? "video" : "image",
+            modelId: isVideoModel ? "wan-2.1-video" : "fomi-flux-ultra",
+            aspectRatio: activeRatio,
+            numOutputs: 1,
+            seed,
+          }),
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Generation request failed");
+        }
+
+        const generated = json.data;
+        const firstOut = generated.outputs?.[0] || {};
+        const newId = `node-${Date.now().toString().slice(-4)}`;
+
+        const newNode = {
+          id: newId,
+          parentId: parent.id,
+          branch: payload.branch || (parent.branch.includes("Branch") ? parent.branch : "Branch C: Dynamic Variant"),
+          title: `Shot ${nodes.length + 1}: Synthesized Leaf`,
+          type: generated.type,
+          prompt: payload.prompt,
+          diffFromParent: `Fork from ${parent.title} with updated prompt parameters`,
+          model: generated.model || activeModel,
+          aspectRatio: generated.aspectRatio || activeRatio,
+          seed: generated.seed || seed,
+          guidance: 7.5,
+          steps: 35,
+          timestamp: "Just now",
+          isHero: true,
+          imageUrl: firstOut.url || "/media/images/portrait-01.jpg",
+          thumbUrl: firstOut.thumbUrl || firstOut.url || "/media/images/portrait-01.jpg",
+          videoUrl: firstOut.videoUrl,
+          posterUrl: firstOut.posterUrl,
+          alt: firstOut.alt || `Forked generation for ${payload.prompt}`,
+        };
+
+        setNodes((prev) => [...prev, newNode]);
+        setActiveNodeId(newNode.id);
+        setCompareParentId(parent.id);
+        setLiveAnnouncement(`Successfully synthesized ${newNode.title}.`);
+      } catch (err) {
+        setGenerateError(err.message || "Failed to synthesize branch.");
+        setLiveAnnouncement(`Generation failed: ${err.message || "Error"}`);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [nodes, activeNode, activeModel, activeRatio]
+  );
+
+  const handleForkNode = useCallback(
+    (id) => {
+      const parent = nodes.find((n) => n.id === id) || activeNode;
+      handleGenerateFork({
+        prompt: `${parent.prompt}, warm peach volumetric bloom, shallow focus`,
+        parentId: parent.id,
+        branch: parent.branch.includes("Branch") ? parent.branch : "Branch C: Lighting Exploration",
+      });
+    },
+    [nodes, activeNode, handleGenerateFork]
+  );
+
+  const handleRetryFork = () => {
+    if (lastForkPayloadRef.current) {
+      handleGenerateFork(lastForkPayloadRef.current);
+    }
+  };
+
   // Keyboard hotkey listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't capture when typing in inputs
-      if (
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
-      ) {
+      // Command Palette hotkey: Cmd/Ctrl+K must always work
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setIsCommandPaletteOpen((prev) => !prev);
-      } else if (e.key === "1") {
+      // Early-return when any modifier is pressed so browser shortcuts (Cmd+C, Cmd+F, Cmd+S, Alt) work naturally
+      if (e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      }
+
+      // Ignore single-key shortcuts when typing in inputs, textareas, selects, contenteditable, or inside a dialog
+      if (isTypingTarget(e.target) || isTypingTarget(document.activeElement)) {
+        return;
+      }
+
+      if (e.key === "1") {
         e.preventDefault();
         setViewMode("graph");
       } else if (e.key === "2") {
@@ -124,37 +193,6 @@ export default function ProfessionalWorkspacePage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeNodeId, handleForkNode, handleCompareWithParent, handleToggleHero]);
 
-  const handleGenerateFork = async (payload) => {
-    setIsGenerating(true);
-    // Simulate generation latency
-    await new Promise((resolve) => setTimeout(resolve, 1400));
-
-    const parent = nodes.find((n) => n.id === payload.parentId) || activeNode;
-    const newId = `node-${Date.now().toString().slice(-4)}`;
-    const newNode = {
-      id: newId,
-      parentId: parent.id,
-      branch: payload.branch || parent.branch,
-      title: `Shot ${nodes.length + 1}: Synthesized Leaf`,
-      prompt: payload.prompt,
-      diffFromParent: `Fork from ${parent.title} with updated prompt parameters`,
-      model: activeModel,
-      aspectRatio: activeRatio,
-      seed: Math.floor(Math.random() * 900000) + 100000,
-      guidance: 7.5,
-      steps: 35,
-      timestamp: "Just now",
-      isHero: true,
-      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
-      thumbUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=320&q=80",
-    };
-
-    setNodes((prev) => [...prev, newNode]);
-    setActiveNodeId(newNode.id);
-    setCompareParentId(parent.id);
-    setIsGenerating(false);
-  };
-
   const handleApplySuggestion = (sug) => {
     handleGenerateFork({
       prompt: sug.prompt,
@@ -165,6 +203,19 @@ export default function ProfessionalWorkspacePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)] transition-colors duration-200">
+      {/* Accessible skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--accent-coral)] focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none"
+      >
+        Skip to workspace canvas
+      </a>
+
+      {/* Screen reader live region */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveAnnouncement}
+      </div>
+
       {/* 1. Pro Header with Project Context & Mode Switcher */}
       <WorkspaceHeader
         projectMetadata={PRO_PROJECT_METADATA}
@@ -174,12 +225,48 @@ export default function ProfessionalWorkspacePage() {
         onOpenProjectMemory={() => setIsProjectMemoryOpen(true)}
       />
 
+      {/* Error state banner with retry */}
+      {generateError && (
+        <div
+          role="alert"
+          className="mx-4 sm:mx-6 mt-3 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 flex items-center justify-between gap-3 shadow-warm-sm animate-in fade-in"
+        >
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" aria-hidden="true" />
+            <div className="text-xs">
+              <span className="font-semibold block text-rose-600 dark:text-rose-400">Synthesis Error</span>
+              <span>{generateError}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRetryFork}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold cursor-pointer shadow-xs"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenerateError(null)}
+              aria-label="Dismiss error"
+              className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-500 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 2. Main Hero Stage */}
-      <main className="flex-1 flex flex-col relative w-full overflow-hidden">
+      <main id="main-content" className="flex-1 flex flex-col relative w-full overflow-hidden">
         {viewMode === "graph" && (
           <LineageGraph
             nodes={nodes}
             activeNodeId={activeNodeId}
+            isGenerating={isGenerating}
+            activeNode={activeNode}
             onSelectNode={handleSelectNode}
             onForkNode={handleForkNode}
             onCompareWithParent={handleCompareWithParent}

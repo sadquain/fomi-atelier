@@ -100,4 +100,23 @@ The core breakthrough of this workspace is that **an idea is never lost and cont
 
 ---
 
+## 8. Professional Keyboard Shortcut System
+
+All single-key shortcuts are guarded by `lib/isTypingTarget.js` to prevent collisions when typing in inputs, textareas, contenteditable elements, or modal dialogs:
+
+| Key Binding | Action | Target / Scope |
+| :--- | :--- | :--- |
+| `⌘K` / `Ctrl+K` | Toggle Omni Command Palette | Global (accessible anytime) |
+| `1` | Switch to **Timeline Graph** View | Canvas / Navigation |
+| `2` | Switch to **Cinema Canvas** View | Canvas / Navigation |
+| `3` | Switch to **Swipe Diff Compare** View | Canvas / Navigation |
+| `F` | **Fork** active node into a new creative branch | Active Generation Node |
+| `C` | **Compare** active node with parent node | Active Generation Node |
+| `S` | **Star / Unstar** active node as Hero Shot | Active Generation Node |
+| `M` | Toggle **Project Memory DNA** Drawer | Studio State |
+| `/` | Focus **Floating Prompt Dock** textarea | Prompt Ergonomics |
+| `Esc` | Dismiss modals, drawers, or command palette | Dialogs & Drawers |
+
+---
+
 *Authored for the Fomi Atelier Technical Assessment submission.*

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   X,
   Database,
@@ -87,10 +88,11 @@ export function ProjectMemoryDrawer({
 
             <div className="p-3.5 rounded-2xl bg-[var(--bg-panel-peach)] border border-[var(--border-subtle)] space-y-3">
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={dna.character.avatarUrl}
-                  alt={dna.character.name}
+                  alt={dna.character.alt || dna.character.name}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-2xl object-cover ring-2 ring-[var(--accent-coral)]"
                 />
                 <div>

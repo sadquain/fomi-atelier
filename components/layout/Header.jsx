@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Sparkles, HelpCircle, LayoutGrid, Menu, X } from "lucide-react";
 import { IconNav } from "./IconNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -135,14 +136,19 @@ export function Header({ activeTab, onTabChange, onToggleMobilePanel }) {
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
-              { title: "Neo Porcelain", style: "Claymation", author: "@celeste", img: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80" },
-              { title: "Solar Dune Arch", style: "Cinematic", author: "@aether", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" },
-              { title: "Fluid Deep", style: "Simulation", author: "@marina", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80" },
+              { title: "Neo Porcelain", style: "Claymation", author: "@celeste", img: "/media/images/portrait-01.jpg" },
+              { title: "Solar Dune Arch", style: "Cinematic", author: "@aether", img: "/media/images/portrait-05.jpg" },
+              { title: "Fluid Deep", style: "Simulation", author: "@marina", img: "/media/images/portrait-14.jpg" },
             ].map((item, idx) => (
               <div key={idx} className="rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-warm-sm group">
-                <div className="aspect-[3/4] overflow-hidden bg-[var(--bg-subtle)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="relative aspect-[3/4] overflow-hidden bg-[var(--bg-subtle)]">
+                  <Image
+                    src={item.img}
+                    alt={`Community showcase piece: ${item.title} in ${item.style} style by ${item.author}`}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 240px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
                 <div className="p-2.5">
                   <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{item.title}</p>

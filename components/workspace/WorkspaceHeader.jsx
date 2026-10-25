@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   GitBranch,
   SplitSquareVertical,
@@ -64,10 +65,11 @@ export function WorkspaceHeader({
             <span className="font-medium text-[11px]">DNA:</span>
             {/* Character thumb */}
             <div className="flex items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={dna.character.avatarUrl}
-                alt={dna.character.name}
+                alt={dna.character.alt || dna.character.name}
+                width={16}
+                height={16}
                 className="w-4 h-4 rounded-full object-cover"
               />
               <span className="text-[11px] text-[var(--text-secondary)] font-medium">

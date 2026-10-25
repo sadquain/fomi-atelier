@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Retaining @tailwindcss/turbopack loader as native Next.js 16 Turbopack pipeline for Tailwind CSS v4
   turbopack: {
     rules: {
       "*.css": {

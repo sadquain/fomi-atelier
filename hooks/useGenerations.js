@@ -1,29 +1,30 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { INITIAL_GENERATIONS } from "@/lib/mockData";
 
 export function useGenerations() {
-  const [generations, setGenerations] = useState(INITIAL_GENERATIONS);
+  const [generations, setGenerations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeGenerationId, setActiveGenerationId] = useState(INITIAL_GENERATIONS[0]?.id || null);
+  const [activeGenerationId, setActiveGenerationId] = useState(null);
 
   const fetchGenerations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/generations");
-      if (!res.ok) throw new Error("Failed to fetch generations");
+      if (!res.ok) throw new Error("Failed to fetch generations from server.");
       const json = await res.json();
       if (json.data && Array.isArray(json.data)) {
         setGenerations(json.data);
         if (json.data[0]) {
           setActiveGenerationId(json.data[0].id);
         }
+      } else {
+        setGenerations([]);
       }
     } catch (err) {
-      setError(err.message || "An unexpected error occurred.");
+      setError(err.message || "An unexpected error occurred while loading generations.");
     } finally {
       setIsLoading(false);
     }
