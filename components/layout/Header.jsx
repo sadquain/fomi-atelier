@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Sparkles, HelpCircle, LayoutGrid, Menu, X } from "lucide-react";
 import { IconNav } from "./IconNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -55,6 +56,15 @@ export function Header({ activeTab, onTabChange, onToggleMobilePanel }) {
 
           {/* Right: Actions, Gallery & Support Pills, Theme Toggle, User Avatar */}
           <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Pro Studio Link */}
+            <Link
+              href="/workspace"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--accent-coral)] text-white hover:bg-[var(--accent-coral-hover)] shadow-xs transition-all cursor-pointer active:scale-95"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Pro Studio</span>
+            </Link>
+
             {/* Gallery pill */}
             <Button
               variant="secondary"
